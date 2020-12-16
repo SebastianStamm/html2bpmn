@@ -29,15 +29,53 @@ class BpmnProcess extends HTMLElement {
   async init() {
     const wrapper = document.createElement("div");
     this.shadowRoot.appendChild(wrapper);
+    wrapper.style.pointerEvents = "none";
 
     const viewer = new BpmnJS({
       container: wrapper,
     });
 
     try {
-      const { warnings } = await viewer.importXML(xml);
+      await viewer.importXML(xml);
 
-      console.log("rendered");
+      const elementFactory = viewer.get("elementFactory"),
+        elementRegistry = viewer.get("elementRegistry"),
+        modeling = viewer.get("modeling"),
+        canvas = viewer.get("canvas"),
+        bpmnFactory = viewer.get("bpmnFactory"),
+        process = elementRegistry.get("Process_1");
+
+      let x = 0;
+      let previousShape;
+
+      for (let i = 0; i < this.children.length; i++) {
+        const child = this.children[i];
+        const name = child.textContent;
+        const type = convertTagToType(child);
+
+        const bo = bpmnFactory.create(type, {
+          id: Math.random().toString(32),
+          name,
+        });
+
+        const element = elementFactory.createShape({
+          type,
+          businessObject: bo,
+        });
+
+        x += element.width / 2;
+
+        modeling.createShape(element, { x, y: 0 }, process);
+
+        if (previousShape) {
+          modeling.connect(previousShape, element);
+        }
+
+        previousShape = element;
+        x += 50 + element.width / 2;
+      }
+
+      canvas.zoom("fit-viewport", "auto");
     } catch (err) {
       console.log("error rendering", err);
     }
@@ -49,13 +87,22 @@ customElements.define("bpmn-process", BpmnProcess);
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" targetNamespace="http://bpmn.io/schema/bpmn" id="Definitions_1">
   <bpmn:process id="Process_1" isExecutable="false">
-    <bpmn:startEvent id="StartEvent_1"/>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-        <dc:Bounds height="36.0" width="36.0" x="173.0" y="102.0"/>
-      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>`;
+
+function convertTagToType(node) {
+  console.dir(node);
+  if (node.tagName === "BPMN-EVENT") {
+    if (node.getAttribute("type") === "end") {
+      return "bpmn:EndEvent";
+    }
+    return "bpmn:StartEvent";
+  }
+  if (node.tagName === "BPMN-TASK") {
+    return "bpmn:Task";
+  }
+}
