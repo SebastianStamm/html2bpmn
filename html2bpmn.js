@@ -85,16 +85,21 @@ class BpmnProcess extends HTMLElement {
 
           const minY = Math.min(
             ...elements
-              .map((element) => element.y - element.height / 2)
+              .map((element) => element.y)
               .filter((a) => typeof a === "number")
           );
           const maxY = Math.max(
             ...elements
-              .map((element) => element.y + element.height / 2)
+              .map((element) => element.y + element.height)
               .filter((a) => typeof a === "number")
           );
 
-          const deltaY = ((maxY - minY) / 2 + 50) * getDeltaY(j);
+          let deltaY;
+          if (j === 0) {
+            deltaY = -maxY - 50;
+          } else if (j === 1) {
+            deltaY = -minY + 50;
+          }
 
           modeling.moveElements(elements, { x: x, y: deltaY });
           elementsCollection.push(elements);
@@ -194,16 +199,21 @@ function createPath(elements, viewer) {
 
         const minY = Math.min(
           ...elements
-            .map((element) => element.y - element.height / 2)
+            .map((element) => element.y)
             .filter((a) => typeof a === "number")
         );
         const maxY = Math.max(
           ...elements
-            .map((element) => element.y + element.height / 2)
+            .map((element) => element.y + element.height)
             .filter((a) => typeof a === "number")
         );
 
-        const deltaY = ((maxY - minY) / 2 + 50) * getDeltaY(j);
+        let deltaY;
+        if (j === 0) {
+          deltaY = -maxY - 50;
+        } else if (j === 1) {
+          deltaY = -minY + 50;
+        }
 
         modeling.moveElements(elements, { x: x, y: deltaY });
         elementsCollection.push(elements);
@@ -274,16 +284,5 @@ function convertTagToType(node) {
     return "bpmn:Task";
   } else if (node.tagName === "BPMN-GATEWAY") {
     return "bpmn:ExclusiveGateway";
-  }
-}
-
-function getDeltaY(idx) {
-  switch (idx) {
-    case 0:
-      return -1;
-    case 1:
-      return 1;
-    case 2:
-      return 0;
   }
 }
