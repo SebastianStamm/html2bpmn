@@ -35,99 +35,95 @@ class BpmnProcess extends HTMLElement {
       container: wrapper,
     });
 
-    try {
-      await viewer.importXML(xml);
+    await viewer.importXML(xml);
 
-      const elementFactory = viewer.get("elementFactory"),
-        elementRegistry = viewer.get("elementRegistry"),
-        modeling = viewer.get("modeling"),
-        canvas = viewer.get("canvas"),
-        bpmnFactory = viewer.get("bpmnFactory"),
-        process = elementRegistry.get("Process_1");
+    const elementFactory = viewer.get("elementFactory"),
+      elementRegistry = viewer.get("elementRegistry"),
+      modeling = viewer.get("modeling"),
+      canvas = viewer.get("canvas"),
+      bpmnFactory = viewer.get("bpmnFactory"),
+      process = elementRegistry.get("Process_1");
 
-      let x = 0;
-      let previousShape;
+    let x = 0;
+    let previousShape;
 
-      for (let i = 0; i < this.children.length; i++) {
-        const child = this.children[i];
-        let name = child.textContent;
-        const type = convertTagToType(child);
+    for (let i = 0; i < this.children.length; i++) {
+      const child = this.children[i];
+      let name = child.textContent;
+      const type = convertTagToType(child);
 
-        if (type === "bpmn:ExclusiveGateway") {
-          name = child.getAttribute("label");
+      if (type === "bpmn:ExclusiveGateway") {
+        name = child.getAttribute("label");
+      }
+
+      const bo = bpmnFactory.create(type, {
+        id: Math.random().toString(32),
+        name,
+      });
+
+      const element = elementFactory.createShape({
+        type,
+        businessObject: bo,
+      });
+
+      x += element.width / 2;
+
+      modeling.createShape(element, { x, y: 0 }, process);
+
+      if (previousShape) {
+        modeling.connect(previousShape, element);
+      }
+
+      previousShape = element;
+      x += 50 + element.width / 2;
+
+      if (type === "bpmn:ExclusiveGateway") {
+        // create subpaths
+        const elementsCollection = [];
+        for (let j = 0; j < child.children.length; j++) {
+          const elements = createPath(child.children[j].children, viewer);
+
+          const deltaY = getDeltaY(j);
+
+          modeling.moveElements(elements, { x: x, y: deltaY });
+          elementsCollection.push(elements);
         }
+
+        x =
+          Math.max(
+            ...elementRegistry
+              .getAll()
+              .map((element) => element.x + element.width)
+              .filter((a) => !!a)
+          ) + 50;
 
         const bo = bpmnFactory.create(type, {
           id: Math.random().toString(32),
-          name,
         });
 
-        const element = elementFactory.createShape({
+        const element2 = elementFactory.createShape({
           type,
           businessObject: bo,
         });
+        x += element2.width / 2;
 
-        x += element.width / 2;
+        modeling.createShape(element2, { x, y: 0 }, process);
 
-        modeling.createShape(element, { x, y: 0 }, process);
-
-        if (previousShape) {
-          modeling.connect(previousShape, element);
+        for (let j = 0; j < elementsCollection.length; j++) {
+          modeling.connect(element, elementsCollection[j][0]);
+          modeling.connect(
+            elementsCollection[j][elementsCollection[j].length - 1],
+            element2
+          );
         }
 
-        previousShape = element;
-        x += 50 + element.width / 2;
+        x += 50 + element2.width / 2;
 
-        if (type === "bpmn:ExclusiveGateway") {
-          // create subpaths
-          const elementsCollection = [];
-          for (let j = 0; j < child.children.length; j++) {
-            const elements = createPath(child.children[j].children, viewer);
-
-            const deltaY = getDeltaY(j);
-
-            modeling.moveElements(elements, { x: x, y: deltaY });
-            elementsCollection.push(elements);
-          }
-
-          x =
-            Math.max(
-              ...elementRegistry
-                .getAll()
-                .map((element) => element.x + element.width)
-                .filter((a) => !!a)
-            ) + 50;
-
-          const bo = bpmnFactory.create(type, {
-            id: Math.random().toString(32),
-          });
-
-          const element2 = elementFactory.createShape({
-            type,
-            businessObject: bo,
-          });
-          x += element2.width / 2;
-
-          modeling.createShape(element2, { x, y: 0 }, process);
-
-          for (let j = 0; j < elementsCollection.length; j++) {
-            modeling.connect(element, elementsCollection[j][0]);
-            modeling.connect(
-              elementsCollection[j][elementsCollection[j].length - 1],
-              element2
-            );
-          }
-
-          x += 50 + element2.width / 2;
-
-          previousShape = element2;
-        }
+        previousShape = element2;
       }
-
-      canvas.zoom("fit-viewport", "auto");
-    } catch (err) {
-      console.log("error rendering", err);
     }
+
+    canvas.zoom("fit-viewport", "auto");
   }
 }
 
@@ -170,17 +166,55 @@ function createPath(elements, viewer) {
       modeling.connect(previousShape, element);
     }
 
-    if (type === "bpmn:ExclusiveGateway") {
-      // create subpaths
-      for (let j = 0; j < child.children.length; j++) {
-        const elements = createPath(child.children[j].children);
-        console.log("path", elements);
-      }
-    }
-
     previousShape = element;
     x += 50 + element.width / 2;
 
+    if (type === "bpmn:ExclusiveGateway") {
+      // create subpaths
+      const elementsCollection = [];
+      for (let j = 0; j < child.children.length; j++) {
+        const elements = createPath(child.children[j].children, viewer);
+
+        const deltaY = getDeltaY(j);
+
+        modeling.moveElements(elements, { x: x, y: deltaY });
+        elementsCollection.push(elements);
+      }
+
+      x =
+        Math.max(
+          ...elementRegistry
+            .getAll()
+            .map((element) => element.x + element.width)
+            .filter((a) => !!a)
+        ) + 50;
+
+      const bo = bpmnFactory.create(type, {
+        id: Math.random().toString(32),
+      });
+
+      const element2 = elementFactory.createShape({
+        type,
+        businessObject: bo,
+      });
+      x += element2.width / 2;
+
+      modeling.createShape(element2, { x, y: 0 }, process);
+
+      for (let j = 0; j < elementsCollection.length; j++) {
+        modeling.connect(element, elementsCollection[j][0]);
+        modeling.connect(
+          elementsCollection[j][elementsCollection[j].length - 1],
+          element2
+        );
+      }
+
+      x += 50 + element2.width / 2;
+
+      previousShape = element2;
+      shapes.push(element2);
+      shapes.push(...elementsCollection.flat());
+    }
     shapes.push(element);
   }
 

@@ -11,6 +11,16 @@
     <bpmn-path>
       <bpmn-task>Task B</bpmn-task>
       <bpmn-task>Task C</bpmn-task>
+      <bpmn-gateway type="exclusive">
+        <bpmn-path>
+          <bpmn-task>Task A</bpmn-task>
+        </bpmn-path>
+        <bpmn-path>
+          <bpmn-task>Task B</bpmn-task>
+          <bpmn-task>Task C</bpmn-task>
+        </bpmn-path>
+      </bpmn-gateway>
+      <bpmn-task>Task D</bpmn-task>
     </bpmn-path>
   </bpmn-gateway>
   <bpmn-event type="end">Task done</bpmn-event>
