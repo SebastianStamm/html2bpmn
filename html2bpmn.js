@@ -110,11 +110,15 @@ class BpmnProcess extends HTMLElement {
         modeling.createShape(element2, { x, y: 0 }, process);
 
         for (let j = 0; j < elementsCollection.length; j++) {
-          modeling.connect(element, elementsCollection[j][0]);
-          modeling.connect(
-            elementsCollection[j][elementsCollection[j].length - 1],
-            element2
-          );
+          if (elementsCollection[j].length === 0) {
+            modeling.connect(element, element2);
+          } else {
+            modeling.connect(element, elementsCollection[j][0]);
+            modeling.connect(
+              elementsCollection[j][elementsCollection[j].length - 1],
+              element2
+            );
+          }
         }
 
         x += 50 + element2.width / 2;
@@ -204,11 +208,15 @@ function createPath(elements, viewer) {
       modeling.createShape(element2, { x, y: 0 }, process);
 
       for (let j = 0; j < elementsCollection.length; j++) {
-        modeling.connect(element, elementsCollection[j][0]);
-        modeling.connect(
-          elementsCollection[j][elementsCollection[j].length - 1],
-          element2
-        );
+        if (elementsCollection[j].length === 0) {
+          modeling.connect(element, element2);
+        } else {
+          modeling.connect(element, elementsCollection[j][0]);
+          modeling.connect(
+            elementsCollection[j][elementsCollection[j].length - 1],
+            element2
+          );
+        }
       }
 
       x += 50 + element2.width / 2;
