@@ -3,24 +3,37 @@
 <bpmn-process>
   <bpmn-event type="start">Hello world</bpmn-event>
   <bpmn-task>This is a task</bpmn-task>
-  <bpmn-task>This is another task</bpmn-task>
   <bpmn-gateway type="exclusive">
     <bpmn-path>
       <bpmn-task>Task A</bpmn-task>
     </bpmn-path>
     <bpmn-path>
       <bpmn-task>Task B</bpmn-task>
-      <bpmn-task>Task C</bpmn-task>
       <bpmn-gateway type="exclusive">
         <bpmn-path>
           <bpmn-task>Task A</bpmn-task>
         </bpmn-path>
         <bpmn-path>
           <bpmn-task>Task B</bpmn-task>
-          <bpmn-task>Task C</bpmn-task>
         </bpmn-path>
       </bpmn-gateway>
-      <bpmn-task>Task D</bpmn-task>
+      <bpmn-gateway type="exclusive">
+        <bpmn-path>
+          <bpmn-task>Task A</bpmn-task>
+        </bpmn-path>
+        <bpmn-path>
+          <bpmn-task>Task B</bpmn-task>
+        </bpmn-path>
+      </bpmn-gateway>
+      <bpmn-gateway type="exclusive">
+        <bpmn-path>
+          <bpmn-task>Task A</bpmn-task>
+        </bpmn-path>
+        <bpmn-path>
+          <bpmn-task>Task B</bpmn-task>
+        </bpmn-path>
+      </bpmn-gateway>
+      <bpmn-task>Task B</bpmn-task>
     </bpmn-path>
   </bpmn-gateway>
   <bpmn-event type="end">Task done</bpmn-event>

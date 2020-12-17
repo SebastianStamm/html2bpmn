@@ -91,8 +91,8 @@ class BpmnProcess extends HTMLElement {
 
         x =
           Math.max(
-            ...elementRegistry
-              .getAll()
+            ...elementsCollection
+              .flat()
               .map((element) => element.x + element.width)
               .filter((a) => !!a)
           ) + 50;
@@ -166,6 +166,8 @@ function createPath(elements, viewer) {
       modeling.connect(previousShape, element);
     }
 
+    shapes.push(element);
+
     previousShape = element;
     x += 50 + element.width / 2;
 
@@ -183,8 +185,8 @@ function createPath(elements, viewer) {
 
       x =
         Math.max(
-          ...elementRegistry
-            .getAll()
+          ...elementsCollection
+            .flat()
             .map((element) => element.x + element.width)
             .filter((a) => !!a)
         ) + 50;
@@ -212,10 +214,9 @@ function createPath(elements, viewer) {
       x += 50 + element2.width / 2;
 
       previousShape = element2;
-      shapes.push(element2);
       shapes.push(...elementsCollection.flat());
+      shapes.push(element2);
     }
-    shapes.push(element);
   }
 
   return shapes;
