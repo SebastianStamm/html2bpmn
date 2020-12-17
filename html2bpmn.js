@@ -83,7 +83,18 @@ class BpmnProcess extends HTMLElement {
         for (let j = 0; j < child.children.length; j++) {
           const elements = createPath(child.children[j].children, viewer);
 
-          const deltaY = getDeltaY(j);
+          const minY = Math.min(
+            ...elements
+              .map((element) => element.y - element.height / 2)
+              .filter((a) => typeof a === "number")
+          );
+          const maxY = Math.max(
+            ...elements
+              .map((element) => element.y + element.height / 2)
+              .filter((a) => typeof a === "number")
+          );
+
+          const deltaY = ((maxY - minY) / 2 + 50) * getDeltaY(j);
 
           modeling.moveElements(elements, { x: x, y: deltaY });
           elementsCollection.push(elements);
@@ -94,7 +105,7 @@ class BpmnProcess extends HTMLElement {
             ...elementsCollection
               .flat()
               .map((element) => element.x + element.width)
-              .filter((a) => !!a)
+              .filter((a) => typeof a === "number")
           ) + 50;
 
         const bo = bpmnFactory.create(type, {
@@ -181,7 +192,18 @@ function createPath(elements, viewer) {
       for (let j = 0; j < child.children.length; j++) {
         const elements = createPath(child.children[j].children, viewer);
 
-        const deltaY = getDeltaY(j);
+        const minY = Math.min(
+          ...elements
+            .map((element) => element.y - element.height / 2)
+            .filter((a) => typeof a === "number")
+        );
+        const maxY = Math.max(
+          ...elements
+            .map((element) => element.y + element.height / 2)
+            .filter((a) => typeof a === "number")
+        );
+
+        const deltaY = ((maxY - minY) / 2 + 50) * getDeltaY(j);
 
         modeling.moveElements(elements, { x: x, y: deltaY });
         elementsCollection.push(elements);
@@ -192,7 +214,7 @@ function createPath(elements, viewer) {
           ...elementsCollection
             .flat()
             .map((element) => element.x + element.width)
-            .filter((a) => !!a)
+            .filter((a) => typeof a === "number")
         ) + 50;
 
       const bo = bpmnFactory.create(type, {
@@ -258,9 +280,9 @@ function convertTagToType(node) {
 function getDeltaY(idx) {
   switch (idx) {
     case 0:
-      return -100;
+      return -1;
     case 1:
-      return 100;
+      return 1;
     case 2:
       return 0;
   }

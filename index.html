@@ -21,7 +21,15 @@
         <bpmn-path>
           <bpmn-gateway type="exclusive">
             <bpmn-path>
-              <bpmn-task>Task A</bpmn-task>
+              <bpmn-gateway type="exclusive">
+                <bpmn-path>
+                  <bpmn-task>Task A</bpmn-task>
+                </bpmn-path>
+                <bpmn-path>
+                  <bpmn-task>Task B</bpmn-task>
+                </bpmn-path>
+              </bpmn-gateway>
+              <bpmn-task>Task B</bpmn-task>
             </bpmn-path>
             <bpmn-path>
               <bpmn-task>Task B</bpmn-task>
