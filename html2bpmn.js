@@ -1,12 +1,21 @@
 const script = document.createElement("script");
-script.setAttribute("src", "bpmn-viewer.js");
+script.setAttribute(
+  "src",
+  "https://unpkg.com/bpmn-js@8.0.0/dist/bpmn-modeler.development.js"
+);
 
 const bpmnCss = document.createElement("link");
-bpmnCss.setAttribute("href", "bpmn.css");
+bpmnCss.setAttribute(
+  "href",
+  "https://unpkg.com/bpmn-js@8.0.0/dist/assets/diagram-js.css"
+);
 bpmnCss.setAttribute("rel", "stylesheet");
 
 const diagramCss = document.createElement("link");
-diagramCss.setAttribute("href", "diagram-js.css");
+diagramCss.setAttribute(
+  "href",
+  "https://unpkg.com/bpmn-js@8.0.0/dist/assets/bpmn-font/css/bpmn.css"
+);
 diagramCss.setAttribute("rel", "stylesheet");
 
 document.head.appendChild(script);
