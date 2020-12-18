@@ -70,8 +70,7 @@ class BpmnProcess extends HTMLElement {
       const type = convertTagToType(child);
 
       if (type?.includes("Gateway")) {
-        // debugger;
-        name = child.getAttribute("label");
+        name = child.getAttribute("label") || "";
       }
 
       const bo = bpmnFactory.create(type, {
@@ -88,7 +87,7 @@ class BpmnProcess extends HTMLElement {
 
       const me = modeling.createShape(element, { x, y: 0 }, process);
 
-      if (type?.includes("Gateway")) {
+      if (type?.includes("Gateway") && child.getAttribute("label")) {
         modeling.moveElements([me.labels[0]], { x: 50, y: -35 });
       }
 
@@ -166,7 +165,8 @@ class BpmnProcess extends HTMLElement {
               elementsCollection[j][0],
               element3
             );
-            modeling.moveElements([e2r.labels[0]], { x: -40, y: 0 });
+            if (child.children[j].getAttribute("label"))
+              modeling.moveElements([e2r.labels[0]], { x: -40, y: 0 });
 
             modeling.connect(
               elementsCollection[j][elementsCollection[j].length - 1],
@@ -203,7 +203,7 @@ function createPath(elements, viewer) {
     const type = convertTagToType(child);
 
     if (type?.includes("Gateway")) {
-      name = child.getAttribute("label");
+      name = child.getAttribute("label") || "";
     }
 
     const bo = bpmnFactory.create(type, {
@@ -220,7 +220,7 @@ function createPath(elements, viewer) {
 
     const me = modeling.createShape(element, { x, y: 0 }, process);
 
-    if (type?.includes("Gateway")) {
+    if (type?.includes("Gateway") && child.getAttribute("label")) {
       modeling.moveElements([me.labels[0]], { x: 50, y: -35 });
     }
 
@@ -303,7 +303,9 @@ function createPath(elements, viewer) {
 
           shapes.push(element3);
 
-          modeling.moveElements([e2r.labels[0]], { x: -40, y: 0 });
+          if (child.children[j].getAttribute("label")) {
+            modeling.moveElements([e2r.labels[0]], { x: -40, y: 0 });
+          }
           modeling.connect(
             elementsCollection[j][elementsCollection[j].length - 1],
             element2
