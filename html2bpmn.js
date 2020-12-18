@@ -39,6 +39,14 @@ class BpmnProcess extends HTMLElement {
     const wrapper = document.createElement("div");
     this.shadowRoot.appendChild(wrapper);
     wrapper.style.pointerEvents = "none";
+    wrapper.style.height = this.parentNode.clientHeight + "px";
+
+    wrapper.style.lineHeight = "initial";
+    wrapper.style.textAlign = "initial";
+    wrapper.style.fontSize = "initial";
+    wrapper.style.backgroundColor = "white";
+
+    console.log(this.parentNode.clientHeight);
 
     const viewer = new BpmnJS({
       container: wrapper,
@@ -61,7 +69,8 @@ class BpmnProcess extends HTMLElement {
       let name = child.textContent;
       const type = convertTagToType(child);
 
-      if (type === "bpmn:ExclusiveGateway") {
+      if (type?.includes("Gateway")) {
+        // debugger;
         name = child.getAttribute("label");
       }
 
@@ -77,7 +86,11 @@ class BpmnProcess extends HTMLElement {
 
       x += element.width / 2;
 
-      modeling.createShape(element, { x, y: 0 }, process);
+      const me = modeling.createShape(element, { x, y: 0 }, process);
+
+      if (type?.includes("Gateway")) {
+        modeling.moveElements([me.labels[0]], { x: 50, y: -35 });
+      }
 
       if (previousShape) {
         modeling.connect(previousShape, element);
@@ -86,7 +99,7 @@ class BpmnProcess extends HTMLElement {
       previousShape = element;
       x += 50 + element.width / 2;
 
-      if (type === "bpmn:ExclusiveGateway") {
+      if (type?.includes("Gateway")) {
         // create subpaths
         const elementsCollection = [];
         for (let j = 0; j < child.children.length; j++) {
@@ -95,12 +108,12 @@ class BpmnProcess extends HTMLElement {
           const minY = Math.min(
             ...elements
               .map((element) => element.y)
-              .filter((a) => typeof a === "number")
+              .filter((a) => typeof a === "number" && !isNaN(a))
           );
           const maxY = Math.max(
             ...elements
               .map((element) => element.y + element.height)
-              .filter((a) => typeof a === "number")
+              .filter((a) => typeof a === "number" && !isNaN(a))
           );
 
           let deltaY;
@@ -119,7 +132,7 @@ class BpmnProcess extends HTMLElement {
             ...elementsCollection
               .flat()
               .map((element) => element.x + element.width)
-              .filter((a) => typeof a === "number")
+              .filter((a) => typeof a === "number" && !isNaN(a))
           ) + 50;
 
         const bo = bpmnFactory.create(type, {
@@ -138,7 +151,23 @@ class BpmnProcess extends HTMLElement {
           if (elementsCollection[j].length === 0) {
             modeling.connect(element, element2);
           } else {
-            modeling.connect(element, elementsCollection[j][0]);
+            const bo = bpmnFactory.create("bpmn:SequenceFlow", {
+              id: Math.random().toString(32),
+              name: child.children[j].getAttribute("label") || "",
+            });
+
+            const element3 = elementFactory.createShape({
+              type: "bpmn:SequenceFlow",
+              businessObject: bo,
+            });
+
+            const e2r = modeling.connect(
+              element,
+              elementsCollection[j][0],
+              element3
+            );
+            modeling.moveElements([e2r.labels[0]], { x: -40, y: 0 });
+
             modeling.connect(
               elementsCollection[j][elementsCollection[j].length - 1],
               element2
@@ -173,7 +202,7 @@ function createPath(elements, viewer) {
     let name = child.textContent;
     const type = convertTagToType(child);
 
-    if (type === "bpmn:ExclusiveGateway") {
+    if (type?.includes("Gateway")) {
       name = child.getAttribute("label");
     }
 
@@ -189,7 +218,11 @@ function createPath(elements, viewer) {
 
     x += element.width / 2;
 
-    modeling.createShape(element, { x, y: 0 }, process);
+    const me = modeling.createShape(element, { x, y: 0 }, process);
+
+    if (type?.includes("Gateway")) {
+      modeling.moveElements([me.labels[0]], { x: 50, y: -35 });
+    }
 
     if (previousShape) {
       modeling.connect(previousShape, element);
@@ -200,7 +233,7 @@ function createPath(elements, viewer) {
     previousShape = element;
     x += 50 + element.width / 2;
 
-    if (type === "bpmn:ExclusiveGateway") {
+    if (type?.includes("Gateway")) {
       // create subpaths
       const elementsCollection = [];
       for (let j = 0; j < child.children.length; j++) {
@@ -209,12 +242,12 @@ function createPath(elements, viewer) {
         const minY = Math.min(
           ...elements
             .map((element) => element.y)
-            .filter((a) => typeof a === "number")
+            .filter((a) => typeof a === "number" && !isNaN(a))
         );
         const maxY = Math.max(
           ...elements
             .map((element) => element.y + element.height)
-            .filter((a) => typeof a === "number")
+            .filter((a) => typeof a === "number" && !isNaN(a))
         );
 
         let deltaY;
@@ -233,7 +266,7 @@ function createPath(elements, viewer) {
           ...elementsCollection
             .flat()
             .map((element) => element.x + element.width)
-            .filter((a) => typeof a === "number")
+            .filter((a) => typeof a === "number" && !isNaN(a))
         ) + 50;
 
       const bo = bpmnFactory.create(type, {
@@ -252,7 +285,25 @@ function createPath(elements, viewer) {
         if (elementsCollection[j].length === 0) {
           modeling.connect(element, element2);
         } else {
-          modeling.connect(element, elementsCollection[j][0]);
+          const bo = bpmnFactory.create("bpmn:SequenceFlow", {
+            id: Math.random().toString(32),
+            name: child.children[j].getAttribute("label") || "",
+          });
+
+          const element3 = elementFactory.createShape({
+            type: "bpmn:SequenceFlow",
+            businessObject: bo,
+          });
+
+          const e2r = modeling.connect(
+            element,
+            elementsCollection[j][0],
+            element3
+          );
+
+          shapes.push(element3);
+
+          modeling.moveElements([e2r.labels[0]], { x: -40, y: 0 });
           modeling.connect(
             elementsCollection[j][elementsCollection[j].length - 1],
             element2
@@ -290,8 +341,16 @@ function convertTagToType(node) {
     }
     return "bpmn:StartEvent";
   } else if (node.tagName === "BPMN-TASK") {
+    if (node.getAttribute("type") === "user") {
+      return "bpmn:UserTask";
+    } else if (node.getAttribute("type") === "service") {
+      return "bpmn:ServiceTask";
+    }
     return "bpmn:Task";
   } else if (node.tagName === "BPMN-GATEWAY") {
+    if (node.getAttribute("type") === "parallel") {
+      return "bpmn:ParallelGateway";
+    }
     return "bpmn:ExclusiveGateway";
   }
 }
